@@ -19,6 +19,10 @@ export function useCreateQuestion(roomId: string) {
         }
       )
 
+      if (!response.ok) {
+        throw new Error('Erro ao gerar resposta')
+      }
+
       const result: CreateQuestionResponse = await response.json()
 
       return result
@@ -69,7 +73,28 @@ export function useCreateQuestion(roomId: string) {
     },
 
     onError(_error, _variables, context) {
-      if (context?.questions) {
+      if (context?.newQuestion) {
+        queryClient.setQueryData<GetRoomQuestionsResponse>(
+          ['get-questions', roomId], 
+          questions => {
+            if (!questions) {
+              return questions
+            }
+
+            return questions.map(question => {
+              if (question.id === context.newQuestion.id) {
+                return { 
+                  ...context.newQuestion, 
+                  isGeneratingAnswer: false,
+                  hasError: true
+                }
+              }
+
+              return question
+            })
+          }
+        )
+      } else if (context?.questions) {
         queryClient.setQueryData<GetRoomQuestionsResponse>(
           ['get-questions', roomId], 
           context.questions

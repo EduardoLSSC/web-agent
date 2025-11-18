@@ -4,4 +4,5 @@ export type GetRoomQuestionsResponse = Array<{
   answer: string | null
   createdAt: string
   isGeneratingAnswer?: boolean
+  hasError?: boolean
 }>
