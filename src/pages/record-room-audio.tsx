@@ -3,6 +3,8 @@ import { Navigate, useParams, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { RecordedAudio } from '@/components/recorded-audio'
+import { API_BASE_URL } from '@/lib/api-base-url'
+import { useAuth } from '@/lib/auth-context'
 
 const isRecordingSupported =
   !!navigator.mediaDevices &&
@@ -15,6 +17,7 @@ type RoomParams = {
 
 export function RecordRoomAudio() {
   const params = useParams<RoomParams>()
+  const { token, logout } = useAuth()
   const [isRecording, setIsRecording] = useState(false)
   const [volume, setVolume] = useState(0)
   const [frequencyData, setFrequencyData] = useState<Uint8Array | null>(null)
@@ -88,6 +91,11 @@ export function RecordRoomAudio() {
 
     // Quando o upload for concluído
     xhr.addEventListener('load', () => {
+      if (xhr.status === 401) {
+        logout()
+        window.location.assign('/login')
+        return
+      }
       if (xhr.status >= 200 && xhr.status < 300) {
         setUploadProgress(100)
         setUploadComplete(true)
@@ -115,7 +123,10 @@ export function RecordRoomAudio() {
       setIsUploading(false)
     })
 
-    xhr.open('POST', `http://localhost:3333/rooms/${params.roomId}/audio`)
+    xhr.open('POST', `${API_BASE_URL}/rooms/${params.roomId}/audio`)
+    if (token) {
+      xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+    }
     xhr.send(formData)
   }
 
