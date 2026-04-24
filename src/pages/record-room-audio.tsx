@@ -100,7 +100,7 @@ export function RecordRoomAudio() {
         setUploadProgress(100)
         setUploadComplete(true)
         setIsUploading(false)
-        
+
         try {
           const result = JSON.parse(xhr.responseText)
           console.log('Upload concluído:', result)
@@ -151,14 +151,14 @@ export function RecordRoomAudio() {
 
     recorder.current.onstop = () => {
       console.log('gravacao pausada')
-      
+
       // Cria o blob final com todos os chunks
       if (audioChunksRef.current.length > 0) {
         const finalBlob = new Blob(audioChunksRef.current, {
           type: 'audio/webm',
         })
         setRecordedAudio(finalBlob)
-        
+
         // Envia o áudio para o servidor
         uploadAudio(finalBlob)
       }
